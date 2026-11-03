@@ -66,9 +66,7 @@ describe("computeProgress", () => {
     const p = computeProgress(
       ["A", "B", "C", "D", "E"].map((s, i) => M(s, i === 0 ? 100 : 75, `2026-05-0${i + 1}`)),
     );
-    expect(unlocked(p)).toEqual(
-      expect.arrayContaining(["score-95", "score-100", "all-rounder"]),
-    );
+    expect(unlocked(p)).toEqual(expect.arrayContaining(["score-95", "score-100", "all-rounder"]));
     const allRounder = p.achievements.find((a) => a.id === "all-rounder")!;
     expect(allRounder.progress).toEqual({ value: 5, goal: 5 });
   });

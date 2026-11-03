@@ -10,7 +10,10 @@
   border: 1px solid color-mix(in srgb, var(--lu-accent, #3b82f6) 55%, transparent);
   border-radius: 999px;
   background:
-    linear-gradient(color-mix(in srgb, var(--lu-accent, #3b82f6) 28%, transparent), color-mix(in srgb, var(--lu-accent, #3b82f6) 28%, transparent)),
+    linear-gradient(
+      color-mix(in srgb, var(--lu-accent, #3b82f6) 28%, transparent),
+      color-mix(in srgb, var(--lu-accent, #3b82f6) 28%, transparent)
+    ),
     #161616;
   color: var(--text-primary);
   font: inherit;
@@ -18,7 +21,9 @@
   font-weight: 700;
   cursor: pointer;
   overflow: hidden;
-  transition: transform 0.15s ease, filter 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    filter 0.15s ease;
 }
 #bsplus-levelup-pill[hidden] {
   display: none;
@@ -51,7 +56,8 @@
   padding: 16px;
   border-radius: 16px;
   /* Themes can make --background-primary translucent; keep it opaque. */
-  background: linear-gradient(var(--background-primary, #1e1e1e), var(--background-primary, #1e1e1e)), #141414;
+  background:
+    linear-gradient(var(--background-primary, #1e1e1e), var(--background-primary, #1e1e1e)), #141414;
   backdrop-filter: blur(12px);
   color: var(--text-primary);
   border: 1px solid color-mix(in srgb, var(--text-primary) 12%, transparent);
@@ -75,7 +81,11 @@
   width: 64px;
   height: 64px;
   border-radius: 16px;
-  background: linear-gradient(135deg, var(--lu-accent, #3b82f6), color-mix(in srgb, var(--lu-accent, #3b82f6) 40%, #000));
+  background: linear-gradient(
+    135deg,
+    var(--lu-accent, #3b82f6),
+    color-mix(in srgb, var(--lu-accent, #3b82f6) 40%, #000)
+  );
   font-size: 26px;
   font-weight: 800;
   line-height: 1;
@@ -217,7 +227,8 @@
   padding: 12px 16px;
   border-radius: 14px;
   /* Themes can make --background-primary translucent; keep it opaque. */
-  background: linear-gradient(var(--background-primary, #1e1e1e), var(--background-primary, #1e1e1e)), #141414;
+  background:
+    linear-gradient(var(--background-primary, #1e1e1e), var(--background-primary, #1e1e1e)), #141414;
   backdrop-filter: blur(12px);
   color: var(--text-primary);
   border: 1px solid color-mix(in srgb, var(--lu-accent, #3b82f6) 55%, transparent);

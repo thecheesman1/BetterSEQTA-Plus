@@ -11,13 +11,20 @@
   border: 1px solid color-mix(in srgb, var(--ask-accent) 60%, transparent);
   border-radius: 999px;
   background:
-    linear-gradient(color-mix(in srgb, var(--ask-accent) 30%, transparent), color-mix(in srgb, var(--ask-accent) 30%, transparent)),
+    linear-gradient(
+      color-mix(in srgb, var(--ask-accent) 30%, transparent),
+      color-mix(in srgb, var(--ask-accent) 30%, transparent)
+    ),
     #161616;
   color: #fff;
-  font: 600 13px Rubik, sans-serif;
+  font:
+    600 13px Rubik,
+    sans-serif;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
   cursor: pointer;
-  transition: transform 0.15s ease, filter 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    filter 0.15s ease;
 }
 #bsplus-ask-fab:hover {
   transform: translateY(-2px);
@@ -169,7 +176,9 @@
   border-radius: 999px;
   background: color-mix(in srgb, var(--ask-accent) 14%, transparent);
   color: inherit;
-  font: 500 12px Rubik, sans-serif;
+  font:
+    500 12px Rubik,
+    sans-serif;
   cursor: pointer;
 }
 .bsplus-ask-suggest button:hover {
@@ -192,7 +201,9 @@
   border-radius: 12px;
   background: color-mix(in srgb, var(--text-primary, #fff) 5%, transparent);
   color: inherit;
-  font: 13px/1.4 Rubik, sans-serif;
+  font:
+    13px/1.4 Rubik,
+    sans-serif;
   outline: none;
 }
 .bsplus-ask-form textarea:focus {

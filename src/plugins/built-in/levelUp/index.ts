@@ -198,7 +198,10 @@ const levelUpPlugin: Plugin<typeof settings, LevelUpStorage> = {
     };
     // Analytics rewrites its cache after each sync: recompute (and maybe toast).
     const onStorage = (changes: Record<string, unknown>, area: string) => {
-      if (area === "local" && Object.keys(changes).some((k) => k.startsWith(ANALYTICS_KEY_PREFIX))) {
+      if (
+        area === "local" &&
+        Object.keys(changes).some((k) => k.startsWith(ANALYTICS_KEY_PREFIX))
+      ) {
         void recompute();
       }
     };

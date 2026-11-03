@@ -13,7 +13,10 @@
   border-radius: 10px;
   border: 1px solid color-mix(in srgb, var(--cd-colour) 45%, transparent);
   background:
-    linear-gradient(color-mix(in srgb, var(--cd-colour) 26%, transparent), color-mix(in srgb, var(--cd-colour) 26%, transparent)),
+    linear-gradient(
+      color-mix(in srgb, var(--cd-colour) 26%, transparent),
+      color-mix(in srgb, var(--cd-colour) 26%, transparent)
+    ),
     #161616;
   color: var(--text-primary);
   font-size: 12px;

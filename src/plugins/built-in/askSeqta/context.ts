@@ -58,7 +58,9 @@ async function timetableSection(student: number): Promise<string> {
     if (l.date !== day) {
       day = l.date;
       const d = new Date(`${l.date}T00:00:00`);
-      lines.push(`\n${d.toLocaleDateString("en-AU", { weekday: "long", day: "numeric", month: "short" })}:`);
+      lines.push(
+        `\n${d.toLocaleDateString("en-AU", { weekday: "long", day: "numeric", month: "short" })}:`,
+      );
     }
     const name = l.description || (l.type === "tutorial" ? "Tutorial" : "Lesson");
     lines.push(
@@ -145,12 +147,9 @@ export async function buildSeqtaContext(force = false): Promise<string> {
   if (student == null) throw new Error("Not signed in to SEQTA");
   const now = new Date();
   const sections = await Promise.all(
-    [
-      timetableSection(student),
-      upcomingSection(student),
-      gradesSection(),
-      messagesSection(),
-    ].map((p) => p.catch(() => "")),
+    [timetableSection(student), upcomingSection(student), gradesSection(), messagesSection()].map(
+      (p) => p.catch(() => ""),
+    ),
   );
 
   const text = [

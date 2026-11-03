@@ -91,7 +91,14 @@ export function computeProgress(assessments: XpAssessment[]): Progress {
   const levelStart = xpForLevel(level);
   const count = marked.length;
 
-  const goal = (id: string, icon: string, title: string, description: string, value: number, target: number): Achievement => ({
+  const goal = (
+    id: string,
+    icon: string,
+    title: string,
+    description: string,
+    value: number,
+    target: number,
+  ): Achievement => ({
     id,
     icon,
     title,
@@ -99,7 +106,13 @@ export function computeProgress(assessments: XpAssessment[]): Progress {
     unlocked: value >= target,
     progress: { value: Math.min(value, target), goal: target },
   });
-  const flag = (id: string, icon: string, title: string, description: string, unlocked: boolean): Achievement => ({
+  const flag = (
+    id: string,
+    icon: string,
+    title: string,
+    description: string,
+    unlocked: boolean,
+  ): Achievement => ({
     id,
     icon,
     title,
@@ -113,10 +126,30 @@ export function computeProgress(assessments: XpAssessment[]): Progress {
     goal("marks-100", "💯", "Centurion", "100 marked assessments", count, 100),
     flag("score-95", "🧠", "Big Brain", "Score 95% or higher", best >= 95),
     flag("score-100", "✨", "Flawless", "Score a perfect 100%", best >= 100),
-    flag("comeback", "📈", "Comeback Kid", "Beat your last mark in a subject by 15+ points", comeback),
+    flag(
+      "comeback",
+      "📈",
+      "Comeback Kid",
+      "Beat your last mark in a subject by 15+ points",
+      comeback,
+    ),
     goal("streak-5", "🔥", "On Fire", `5 marks in a row at ${STREAK_THRESHOLD}%+`, bestStreak, 5),
-    goal("streak-10", "☄️", "Unstoppable", `10 marks in a row at ${STREAK_THRESHOLD}%+`, bestStreak, 10),
-    goal("all-rounder", "🎯", "All-Rounder", `${STREAK_THRESHOLD}%+ in 5 different subjects`, strongSubjects.size, 5),
+    goal(
+      "streak-10",
+      "☄️",
+      "Unstoppable",
+      `10 marks in a row at ${STREAK_THRESHOLD}%+`,
+      bestStreak,
+      10,
+    ),
+    goal(
+      "all-rounder",
+      "🎯",
+      "All-Rounder",
+      `${STREAK_THRESHOLD}%+ in 5 different subjects`,
+      strongSubjects.size,
+      5,
+    ),
     goal("level-10", "🔟", "Double Digits", "Reach level 10", level, 10),
   ];
 
