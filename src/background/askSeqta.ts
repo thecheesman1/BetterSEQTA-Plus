@@ -14,6 +14,7 @@ export type AskSeqtaRequest = {
   question?: unknown;
   context?: unknown;
   history?: unknown;
+  style?: unknown;
 };
 
 export async function handleAskSeqta(
@@ -46,6 +47,7 @@ export async function handleAskSeqta(
         question: String(req.question ?? ""),
         context: String(req.context ?? ""),
         history: Array.isArray(req.history) ? req.history : [],
+        style: typeof req.style === "string" ? req.style.slice(0, 2000) : "",
       }),
       signal: controller.signal,
       credentials: "omit",

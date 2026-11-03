@@ -14,6 +14,13 @@ const settings = defineSettings({
     description:
       "Your Ask SEQTA bridge. Run bridge/ask-seqta on your own computer, signed in to your own Claude account",
   }),
+  personality: stringSetting({
+    default: "",
+    title: "Personality",
+    description:
+      "How Ask SEQTA talks (your own system prompt for its voice). Leave empty for the default chill, slightly roast-y co-pilot. It always sticks to your real SEQTA data either way",
+    maxLength: 2000,
+  }),
   accessKey: stringSetting({
     default: "",
     title: "Access key",
@@ -25,6 +32,9 @@ class AskSeqtaPluginClass extends BasePlugin<typeof settings> {
   @Setting(settings.serverUrl)
   serverUrl!: string;
 
+  @Setting(settings.personality)
+  personality!: string;
+
   @Setting(settings.accessKey)
   accessKey!: string;
 }
@@ -34,10 +44,10 @@ const instance = new AskSeqtaPluginClass();
 type Turn = { role: "user" | "assistant"; content: string };
 
 const SUGGESTIONS = [
-  "What's on tomorrow?",
-  "What's due this week?",
-  "Any messages I should know about?",
-  "How am I going in Maths?",
+  "what's on tmrw?",
+  "what's due this week?",
+  "any messages i should care about?",
+  "how cooked am i in maths?",
 ];
 
 function escapeHtml(s: string): string {
@@ -103,7 +113,7 @@ const askSeqtaPlugin: Plugin<typeof settings> = {
       <div class="bsplus-ask-log" aria-live="polite"></div>
       <div class="bsplus-ask-suggest"></div>
       <form class="bsplus-ask-form">
-        <textarea rows="1" maxlength="2000" placeholder="Ask about your classes, work, marks…"></textarea>
+        <textarea rows="1" maxlength="2000" placeholder="ask me anything about ur school stuff…"></textarea>
         <button type="submit" title="Send (Enter)">➤</button>
       </form>
       <p class="bsplus-ask-privacy"></p>`;
@@ -170,10 +180,11 @@ const askSeqtaPlugin: Plugin<typeof settings> = {
           question,
           context,
           history: history.slice(-6),
+          style: api.settings.personality,
         })) as { answer?: string; error?: string } | undefined;
         pending.remove();
         if (!res || res.error) {
-          bubble("error", escapeHtml(res?.error ?? "No answer came back."));
+          bubble("error", escapeHtml(res?.error ?? "nothing came back. weird."));
           return;
         }
         const answer = res.answer ?? "";
@@ -181,7 +192,7 @@ const askSeqtaPlugin: Plugin<typeof settings> = {
         bubble("assistant", renderAnswer(answer));
       } catch {
         pending.remove();
-        bubble("error", "Something went wrong gathering your SEQTA data.");
+        bubble("error", "couldn't grab your SEQTA data. SEQTA being SEQTA, probably.");
       } finally {
         busy = false;
         sendBtn.disabled = false;

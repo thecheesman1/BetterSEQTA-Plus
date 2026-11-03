@@ -34,6 +34,7 @@ That's it. There's no `npm install` for this mode, so `server.mjs` is the only f
 
 | Variable | Default | |
 |---|---|---|
+| `STYLE` | chill co-pilot | Default voice when the extension doesn't send a Personality |
 | `MODEL` | `claude-haiku-5-5` | Model to use. Try `claude-sonnet-5-5` for harder questions |
 | `EFFORT` | `low` | `low` / `medium` / `high` |
 | `PORT` | `8737` | Change it in the extension's Bridge URL too |
