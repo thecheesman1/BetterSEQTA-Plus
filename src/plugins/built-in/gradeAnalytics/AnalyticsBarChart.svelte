@@ -168,7 +168,6 @@
                 : undefined,
             },
             yAxis: {
-              label: "Assessments",
               format: (d: number) => (Number.isInteger(d) ? String(d) : ""),
               ticks: 5,
             },

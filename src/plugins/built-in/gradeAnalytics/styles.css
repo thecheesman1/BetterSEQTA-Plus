@@ -1464,6 +1464,12 @@
   background: transparent !important;
 }
 
+/* LayerChart gives text a 2px "halo" stroke meant to match the background;
+   it resolved to white here and smeared every axis label. */
+.bsplus-analytics-root [data-slot="chart"] .lc-text {
+  stroke: none !important;
+}
+
 /* Critical: layerchart layout group defaults to black fill */
 .bsplus-analytics-root [data-slot="chart"] .lc-layout-svg-g,
 .bsplus-analytics-root [data-slot="chart"] .lc-tooltip-rects-g,

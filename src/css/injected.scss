@@ -1740,13 +1740,13 @@ html.transparencyEffects [class*="BasicPanel__BasicPanel___q92_U"] > ol > li + l
   background: var(--background-primary);
   transition: 200ms;
   width: 100%;
-  height: 15em;
+  min-height: 15em;
   font-family: Rubik, sans-serif !important;
   font-size: 14px !important;
   font-weight: 500 !important;
   display: grid;
   grid-auto-flow: column;
-  grid-auto-columns: minmax(100px, 1fr);
+  grid-auto-columns: minmax(140px, 1fr);
   border-radius: 16px;
   overflow-x: auto;
 
@@ -1950,9 +1950,9 @@ html.transparencyEffects [class*="BasicPanel__BasicPanel___q92_U"] > ol > li + l
   line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  overflow-wrap: anywhere;
-  word-break: break-word;
-  hyphens: auto;
+  overflow-wrap: break-word;
+  word-break: normal;
+  hyphens: manual;
 }
 .day h3 {
   padding: 0px 5px;
@@ -1961,10 +1961,13 @@ html.transparencyEffects [class*="BasicPanel__BasicPanel___q92_U"] > ol > li + l
   font-size: 13px !important;
   font-weight: 400;
   color: #7a7a7a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .day h4 {
   position: absolute;
-  bottom: 35px;
+  bottom: 52px;
   margin: 0;
   padding: 2px;
   padding-left: 8px;
@@ -3441,6 +3444,9 @@ div.day-empty {
 }
 .upcoming-submittedtext {
   align-self: center;
+  flex-shrink: 0;
+  margin-right: 16px;
+  white-space: nowrap;
   padding: 8px 25px;
   background: var(--item-colour);
   color: white;
@@ -5921,4 +5927,126 @@ h2.home-subtitle {
     opacity: 1;
     transform: scale(1) translateY(0);
   }
+}
+
+/* ---- Dashboard dashlets ---------------------------------------------------- */
+
+/* Header title was flex: 1 1 0 and got crushed to ~30px by the action buttons,
+   wrapping "TASK LIST" onto two lines. Squeeze the pill buttons instead. */
+.dashlet > .header {
+  gap: 4px;
+}
+.dashlet > .header > .title {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+.dashlet > .header > .actions {
+  min-width: 0;
+  margin-left: auto;
+  padding-right: 0;
+}
+.dashlet > .header > .actions > .uiButton {
+  flex: none;
+}
+.dashlet > .header .pillbox > button {
+  padding: 4px 8px !important;
+}
+
+/* Timetable entries (dashboard dashlet + timetable page): a 40-minute lesson
+   is 40px tall but stacked title / times / assessment marker (27px!) /
+   teacher / room, so text spilled into the next lesson. Layout instead:
+     line 1: title            (+ assessment marker as a corner badge)
+     line 2: times · teacher  (teacher only when the box is wide enough)
+     line 3: room             (only when the box is tall enough)
+   Entries have explicit px sizes from SEQTA, so they can be size containers.
+   Entries carrying the classmates avatar stack keep that plugin's grid. */
+.dashlet-timetable .entry.class,
+.timetablepage .entry.class:not(:has(> .bsplus-classmate-stack)) {
+  display: flex !important;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  column-gap: 4px;
+  padding: 3px 4px !important;
+  container-type: size;
+
+  > .title {
+    flex-basis: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  &:has(> .assessment) > .title {
+    padding-right: 16px;
+    box-sizing: border-box;
+  }
+  > .times {
+    flex: none;
+  }
+  > .teacher {
+    display: none;
+    flex: 1 1 0;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    &::before {
+      content: "\00b7  ";
+    }
+  }
+  > .room {
+    display: none;
+    flex-basis: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  > .assessment {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    width: 14px;
+    height: 14px;
+    margin: 0;
+    overflow: hidden;
+
+    svg,
+    img {
+      width: 14px !important;
+      height: 14px !important;
+    }
+  }
+
+  @container (min-width: 170px) {
+    > .teacher {
+      display: block;
+    }
+  }
+  @container (min-height: 52px) {
+    > .room {
+      display: block;
+    }
+  }
+
+  /* 10-minute slots (House Group) are 10px tall: title only, tiny. */
+  &.short {
+    padding: 0 4px !important;
+
+    > .title {
+      font-size: 9px !important;
+      line-height: 10px !important;
+      padding: 0 !important;
+    }
+    > :not(.title) {
+      display: none !important;
+    }
+  }
+}
+
+/* ---- Direqt Messages ------------------------------------------------------- */
+
+/* Subject had text-overflow: ellipsis but display: flex, which ignores it, so
+   long subjects were chopped mid-letter. */
+[class*="MessageList__subject___"] {
+  display: block !important;
 }

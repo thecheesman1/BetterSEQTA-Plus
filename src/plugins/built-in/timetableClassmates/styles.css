@@ -52,24 +52,17 @@
   position: relative;
 }
 
-.day-container .day:has(> .bsplus-classmate-stack) {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, auto);
-  align-items: start;
-  column-gap: 4px;
-}
-
-.day-container .day:has(> .bsplus-classmate-stack) > :not(.bsplus-classmate-stack) {
-  grid-column: 1;
-  min-width: 0;
-}
-
+/* Home cards: float the avatar stack top-right instead of carving out a grid
+   column, which squeezed lesson titles into ~50px and stretched the rows. */
 .day-container .day:has(> .bsplus-classmate-stack) > .bsplus-classmate-stack {
-  grid-column: 2;
-  grid-row: 1 / -1;
-  align-self: start;
-  justify-self: end;
-  margin: 2px 4px 0 0;
+  position: absolute;
+  top: 10px;
+  right: 6px;
+  margin: 0;
+}
+
+.day-container .day:has(> .bsplus-classmate-stack) > h2 {
+  padding-top: 34px;
 }
 
 .bsplus-classmate-avatar {

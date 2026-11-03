@@ -18,6 +18,10 @@ const ANALYTICS_MENU_ICON = MenuitemSVGKey.analytics;
 export const ANALYTICS_MENU_CLASS = "betterseqta-grade-analytics-item";
 export const ANALYTICS_MENU_KEY = "analytics";
 
+function isAnalyticsRoute(): boolean {
+  return location.hash.includes("page=/analytics");
+}
+
 function loadAnalyticsPageLazy() {
   void import("./loadAnalyticsPage").then((m) => m.loadAnalyticsPage());
 }
@@ -97,14 +101,27 @@ export async function injectAnalyticsMenuItem(): Promise<() => void> {
       return;
     }
     e.preventDefault();
-    window.history.pushState({}, "", "/#?page=/analytics");
-    loadAnalyticsPageLazy();
+    // A real hash change (not pushState) so SEQTA's router learns we left its
+    // page. Otherwise e.g. Dashboard -> Analytics -> Dashboard looks like a
+    // no-op to SEQTA and it never re-renders the #main we cleared: blank page.
+    // onRouteChange below does the actual mounting.
+    if (isAnalyticsRoute()) return;
+    location.hash = "?page=/analytics";
   };
   analyticsItem.addEventListener("click", onClick);
+
+  // Mount on any arrival at the route: menu click, back/forward, typed URL.
+  const onRouteChange = () => {
+    if (isAnalyticsRoute() && !document.getElementById("analytics-view-container")) {
+      loadAnalyticsPageLazy();
+    }
+  };
+  window.addEventListener("hashchange", onRouteChange);
 
   return () => {
     menuObserver.disconnect();
     analyticsItem.removeEventListener("click", onClick);
+    window.removeEventListener("hashchange", onRouteChange);
     analyticsItem.remove();
   };
 }
