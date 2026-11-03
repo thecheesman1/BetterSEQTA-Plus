@@ -1,4 +1,6 @@
+import browser from "@/lib/browser";
 import { getUserInfo } from "@/seqta/utils/userInfo";
+import { mergeConsecutiveLessons, relativeDue, type ContextLesson } from "./format";
 
 /** Plain-text snapshot of the student's SEQTA data for the model to answer from. */
 
@@ -7,11 +9,23 @@ const MESSAGE_LIST = 25;
 const MESSAGE_BODIES = 8;
 const BODY_CHARS = 1500;
 const GRADES = 60;
+const NOTICE_CHARS = 600;
+const SUBMISSION_LOOKUPS = 20;
+const WEIGHTINGS_KEY = "plugin.assessments-average.storage.weightings";
+const OVERRIDES_KEY = "plugin.assessments-average.storage.weightingOverrides";
 
 let cached: { at: number; text: string } | null = null;
 
 function ymd(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+function dayLabel(ymdStr: string): string {
+  return new Date(`${ymdStr.slice(0, 10)}T00:00:00`).toLocaleDateString("en-AU", {
+    weekday: "long",
+    day: "numeric",
+    month: "short",
+  });
 }
 
 function post<T>(path: string, body: unknown): Promise<T> {
@@ -29,7 +43,9 @@ function htmlToText(html: string): string {
   return (doc.body.textContent ?? "").replace(/\s+/g, " ").trim();
 }
 
-type Lesson = {
+// ---- timetable ------------------------------------------------------------
+
+type RawLesson = {
   date: string;
   from: string;
   until: string;
@@ -43,44 +59,100 @@ async function timetableSection(student: number): Promise<string> {
   const from = new Date();
   const until = new Date();
   until.setDate(until.getDate() + 7);
-  const res = await post<{ payload?: { items?: Lesson[] } }>("load/timetable", {
+  const res = await post<{ payload?: { items?: RawLesson[] } }>("load/timetable", {
     from: ymd(from),
     until: ymd(until),
     student,
   });
-  const items = [...(res.payload?.items ?? [])].sort((a, b) =>
-    `${a.date}${a.from}`.localeCompare(`${b.date}${b.from}`),
-  );
-  if (!items.length) return "## Timetable (next 7 days)\nNo lessons.";
+  const lessons: ContextLesson[] = (res.payload?.items ?? []).map((l) => ({
+    date: l.date,
+    from: l.from,
+    until: l.until,
+    name: l.description || (l.type === "tutorial" ? "Tutorial" : "Lesson"),
+    room: l.room,
+    staff: l.staff,
+  }));
+  if (!lessons.length) return "## Timetable (next 7 days)\nNo lessons.";
+
   const lines: string[] = [];
   let day = "";
-  for (const l of items) {
+  for (const l of mergeConsecutiveLessons(lessons)) {
     if (l.date !== day) {
       day = l.date;
-      const d = new Date(`${l.date}T00:00:00`);
-      lines.push(
-        `\n${d.toLocaleDateString("en-AU", { weekday: "long", day: "numeric", month: "short" })}:`,
-      );
+      lines.push(`\n${dayLabel(l.date)}:`);
     }
-    const name = l.description || (l.type === "tutorial" ? "Tutorial" : "Lesson");
     lines.push(
-      `- ${l.from.slice(0, 5)}–${l.until.slice(0, 5)} ${name}${l.room ? `, room ${l.room}` : ""}${l.staff ? `, ${l.staff}` : ""}`,
+      `- ${l.from.slice(0, 5)}–${l.until.slice(0, 5)} ${l.name}${l.periods > 1 ? ` (${l.periods} periods back to back)` : ""}${l.room ? `, room ${l.room}` : ""}${l.staff ? `, ${l.staff}` : ""}`,
     );
   }
-  return `## Timetable (next 7 days)${lines.join("\n")}`;
+  return `## Timetable (next 7 days; back-to-back periods of the same class are already merged)${lines.join("\n")}`;
 }
 
-type Upcoming = { title: string; subject: string; due: string; status?: string; overdue?: boolean };
+// ---- assessments ------------------------------------------------------------
+
+type Upcoming = {
+  id: number;
+  title: string;
+  subject: string;
+  due: string;
+  metaclassID: number;
+  status?: string;
+  overdue?: boolean;
+  graded?: boolean;
+};
+
+async function weightLookup(): Promise<(id: number) => string | null> {
+  try {
+    const got = await browser.storage.local.get([WEIGHTINGS_KEY, OVERRIDES_KEY]);
+    const weights = (got[WEIGHTINGS_KEY] ?? {}) as Record<string, { weight?: string }>;
+    const overrides = (got[OVERRIDES_KEY] ?? {}) as Record<string, string>;
+    return (id) => {
+      const w = overrides[String(id)] ?? weights[String(id)]?.weight;
+      return w && Number.parseFloat(w) > 0 ? `${Number.parseFloat(w)}%` : null;
+    };
+  } catch {
+    return () => null;
+  }
+}
+
+/** true = something's been submitted, false = nothing yet, null = couldn't check. */
+async function isSubmitted(a: Upcoming, student: number): Promise<boolean | null> {
+  try {
+    const res = await post<{ payload?: unknown[] }>("assessment/submissions/get", {
+      assessment: a.id,
+      metaclass: a.metaclassID,
+      student,
+    });
+    return Array.isArray(res.payload) ? res.payload.length > 0 : null;
+  } catch {
+    return null;
+  }
+}
 
 async function upcomingSection(student: number): Promise<string> {
-  const res = await post<{ payload?: Upcoming[] }>("assessment/list/upcoming", { student });
+  const [res, weightOf] = await Promise.all([
+    post<{ payload?: Upcoming[] }>("assessment/list/upcoming", { student }),
+    weightLookup(),
+  ]);
   const items = [...(res.payload ?? [])].sort((a, b) => a.due.localeCompare(b.due));
   if (!items.length) return "## Upcoming assessments\nNone.";
-  return `## Upcoming assessments\n${items
-    .map(
-      (a) =>
-        `- ${a.title} (${a.subject}), due ${new Date(a.due).toLocaleDateString("en-AU", { weekday: "short", day: "numeric", month: "short" })}${a.overdue ? " (OVERDUE)" : ""}${a.status ? ` [${a.status.toLowerCase().replace(/_/g, " ")}]` : ""}`,
-    )
+
+  const now = new Date();
+  const submitted = await Promise.all(
+    items.map((a, i) => (i < SUBMISSION_LOOKUPS ? isSubmitted(a, student) : Promise.resolve(null))),
+  );
+
+  return `## Upcoming assessments (SEQTA gives due dates only, no due times)\n${items
+    .map((a, i) => {
+      const bits = [
+        relativeDue(a.due, now),
+        `(${dayLabel(a.due)})`,
+        submitted[i] === true ? "SUBMITTED" : submitted[i] === false ? "NOT SUBMITTED yet" : null,
+        a.graded ? "marked" : null,
+        weightOf(a.id) ? `weight ${weightOf(a.id)}` : null,
+      ].filter(Boolean);
+      return `- ${a.title} (${a.subject}): ${bits.join(", ")}`;
+    })
     .join("\n")}`;
 }
 
@@ -100,13 +172,45 @@ async function gradesSection(): Promise<string> {
     .join("\n")}`;
 }
 
+// ---- notices & messages ---------------------------------------------------------
+
+type Notice = { title?: string; contents?: string; staff?: string; label_title?: string };
+
+async function noticesSection(): Promise<string> {
+  const days = [0, 1].map((offset) => {
+    const d = new Date();
+    d.setDate(d.getDate() + offset);
+    return ymd(d);
+  });
+  const perDay = await Promise.all(
+    days.map((date) =>
+      post<{ payload?: Notice[] }>("load/notices", { date })
+        .then((r) => r.payload ?? [])
+        .catch(() => [] as Notice[]),
+    ),
+  );
+  const lines = days.flatMap((date, i) =>
+    perDay[i].length
+      ? [
+          `\n${dayLabel(date)}:`,
+          ...perDay[i].slice(0, 12).map((n) => {
+            const body = htmlToText(n.contents ?? "").slice(0, NOTICE_CHARS);
+            return `- ${n.title ?? "(untitled)"}${n.label_title ? ` [${n.label_title}]` : ""}${n.staff ? `, from ${n.staff}` : ""}${body ? `: ${body}` : ""}`;
+          }),
+        ]
+      : [],
+  );
+  return lines.length
+    ? `## School notices${lines.join("\n")}`
+    : "## School notices\nNone today or tomorrow.";
+}
+
 type MessageListItem = {
   id: number;
   subject?: string;
   sender?: string;
   date?: string;
   read?: number | boolean;
-  attachments?: boolean;
 };
 
 async function messagesSection(): Promise<string> {
@@ -147,9 +251,13 @@ export async function buildSeqtaContext(force = false): Promise<string> {
   if (student == null) throw new Error("Not signed in to SEQTA");
   const now = new Date();
   const sections = await Promise.all(
-    [timetableSection(student), upcomingSection(student), gradesSection(), messagesSection()].map(
-      (p) => p.catch(() => ""),
-    ),
+    [
+      timetableSection(student),
+      upcomingSection(student),
+      noticesSection(),
+      gradesSection(),
+      messagesSection(),
+    ].map((p) => p.catch(() => "")),
   );
 
   const text = [
