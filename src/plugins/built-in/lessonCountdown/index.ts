@@ -3,6 +3,7 @@ import { type Plugin } from "@/plugins/core/types";
 import { booleanSetting, defineSettings, Setting } from "@/plugins/core/settingsHelpers";
 import { getUserInfo } from "@/seqta/utils/userInfo";
 import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
+import { solidPageAccent } from "@/seqta/ui/colors/pageAccent";
 import { formatDuration, getLessonStatus, type CountdownLesson } from "./status";
 import styles from "./styles.css?inline";
 
@@ -170,7 +171,7 @@ const lessonCountdownPlugin: Plugin<typeof settings> = {
         label.textContent = lessonLabel(lesson, api.settings.showRoom);
         time.textContent = `${formatDuration(endsInMs)} left`;
         fill.style.width = `${Math.min(100, progress * 100).toFixed(1)}%`;
-        chip.style.setProperty("--cd-colour", lesson.colour ?? "var(--better-main)");
+        chip.style.setProperty("--cd-colour", lesson.colour ?? solidPageAccent());
         chip.title = `${lesson.description}${lesson.staff ? ` with ${lesson.staff}` : ""}${lesson.room ? ` in ${lesson.room}` : ""}\n${lesson.from.slice(0, 5)}–${lesson.until.slice(0, 5)}${status.next ? `\nNext: ${lessonLabel(status.next, true)}` : ""}`;
         return;
       }
@@ -183,7 +184,7 @@ const lessonCountdownPlugin: Plugin<typeof settings> = {
         label.textContent = `Next: ${lessonLabel(next, api.settings.showRoom)}`;
         time.textContent = `in ${formatDuration(startsInMs)}`;
         fill.style.width = "0%";
-        chip.style.setProperty("--cd-colour", next.colour ?? "var(--better-main)");
+        chip.style.setProperty("--cd-colour", next.colour ?? solidPageAccent());
         chip.title = `${next.description}${next.staff ? ` with ${next.staff}` : ""} at ${next.from.slice(0, 5)}`;
         return;
       }

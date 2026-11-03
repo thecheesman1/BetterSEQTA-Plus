@@ -10,6 +10,7 @@ import assessmentsOverviewPlugin from "./built-in/assessmentsOverview";
 import backgroundMusicPlugin from "./built-in/backgroundMusic";
 import appIconPlugin from "./built-in/appIcons";
 import lessonCountdownPlugin from "./built-in/lessonCountdown";
+import levelUpPlugin from "./built-in/levelUp";
 
 import assessmentsAveragePluginLazy from "./built-in/assessmentsAverage/lazy";
 import timetableEditPluginLazy from "./built-in/timetableEdit/lazy";
@@ -31,6 +32,7 @@ pluginManager.registerPlugin(assessmentsOverviewPlugin);
 pluginManager.registerPlugin(backgroundMusicPlugin);
 pluginManager.registerPlugin(appIconPlugin);
 pluginManager.registerPlugin(lessonCountdownPlugin);
+pluginManager.registerPlugin(levelUpPlugin);
 
 pluginManager.registerPlugin(assessmentsAveragePluginLazy);
 pluginManager.registerPlugin(timetableEditPluginLazy);
