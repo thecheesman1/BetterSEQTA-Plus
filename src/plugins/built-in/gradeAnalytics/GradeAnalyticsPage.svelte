@@ -19,6 +19,7 @@
   import GradeRangeSlider from "./GradeRangeSlider.svelte";
   import ClassGroupsPanel from "./ClassGroupsPanel.svelte";
   import GradeInferencePanel from "./GradeInferencePanel.svelte";
+  import TargetGradeCalculator from "./TargetGradeCalculator.svelte";
   import {
     defaultCustomTimeRange,
     filterAssessmentsByTimeRange,
@@ -600,6 +601,8 @@
               </div>
             </div>
           {/if}
+
+          <TargetGradeCalculator data={analyticsData ?? []} />
 
           <AssessmentTable data={timeScopedData} />
         </div>
