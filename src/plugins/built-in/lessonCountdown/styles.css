@@ -1,0 +1,66 @@
+#bsplus-lesson-countdown {
+  --cd-colour: var(--better-main);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 340px;
+  min-width: 0;
+  flex-shrink: 1;
+  margin-right: 16px;
+  padding: 6px 12px 8px;
+  overflow: hidden;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--cd-colour) 45%, transparent);
+  background: color-mix(in srgb, var(--cd-colour) 22%, var(--background-primary, #1a1a1a));
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  cursor: default;
+}
+
+#bsplus-lesson-countdown[hidden] {
+  display: none;
+}
+
+#bsplus-lesson-countdown .bsplus-cd-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#bsplus-lesson-countdown .bsplus-cd-time {
+  flex: none;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.8;
+}
+
+/* Progress along the bottom edge, in the subject's colour. */
+#bsplus-lesson-countdown .bsplus-cd-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: color-mix(in srgb, var(--cd-colour) 25%, transparent);
+}
+
+#bsplus-lesson-countdown .bsplus-cd-fill {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: var(--cd-colour);
+  transition: width 1s linear;
+}
+
+#bsplus-lesson-countdown.is-break .bsplus-cd-bar {
+  display: none;
+}
+
+#bsplus-lesson-countdown.is-ending .bsplus-cd-time {
+  opacity: 1;
+  color: var(--cd-colour);
+  filter: brightness(1.4);
+}
