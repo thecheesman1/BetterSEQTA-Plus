@@ -91,6 +91,8 @@ const levelUpPlugin: Plugin<typeof settings, LevelUpStorage> = {
   description: "XP, levels, streaks and achievements from your marks",
   version: "1.0.0",
   settings: instance.settings,
+  // Despite the name, this is what shows the plugin's on/off switch in settings.
+  disableToggle: true,
   styles,
   defaultEnabled: true,
 

@@ -30,6 +30,10 @@ export function matchesSearch(searchQuery: string, ...parts: Array<string | unde
 
 export const PLUGIN_SECTION_BY_ID: Record<string, SettingsSectionId> = {
   "profile-picture": "account",
+  "glow-up": "appearance",
+  "lesson-countdown": "timetable",
+  "level-up": "assessments",
+  "ask-seqta": "features",
   "animated-background": "appearance",
   "background-music": "appearance",
   timetable: "timetable",

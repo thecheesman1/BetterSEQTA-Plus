@@ -86,6 +86,8 @@ const askSeqtaPlugin: Plugin<typeof settings> = {
   description: "Ask questions about your timetable, assessments, marks and messages",
   version: "1.0.0",
   settings: instance.settings,
+  // Despite the name, this is what shows the plugin's on/off switch in settings.
+  disableToggle: true,
   styles,
   defaultEnabled: true,
   beta: true,

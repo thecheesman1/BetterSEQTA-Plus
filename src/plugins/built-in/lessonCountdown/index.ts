@@ -116,6 +116,8 @@ const lessonCountdownPlugin: Plugin<typeof settings> = {
   description: "Shows the current lesson and time until the bell in the top bar",
   version: "1.0.0",
   settings: instance.settings,
+  // Despite the name, this is what shows the plugin's on/off switch in settings.
+  disableToggle: true,
   styles,
   defaultEnabled: true,
 

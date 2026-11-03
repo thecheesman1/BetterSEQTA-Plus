@@ -65,6 +65,14 @@
     ($settingsState.performanceMode ?? false) &&
     $settingsState.performanceModePluginOverrides?.[pluginId] !== true &&
     PERFORMANCE_HEAVY_PLUGIN_IDS.has(pluginId);
+
+  /** Must match the plugin manager: unset falls back to the plugin's
+   *  defaultEnabled, not true, or an off-by-default plugin shows "on". */
+  function isPluginEnabled(plugin: PluginSettingsEntry): boolean {
+    const stored = pluginSettingsStore.values[plugin.pluginId]?.enabled as boolean | undefined;
+    const fallback = (plugin.settings.enabled as { default?: boolean } | undefined)?.default;
+    return stored ?? fallback ?? true;
+  }
 </script>
 
 {#if pluginSettingsStore.loading && visiblePlugins.length === 0}
@@ -106,7 +114,7 @@
         </div>
         <div>
           <Switch
-            state={(pluginSettingsStore.values[plugin.pluginId]?.enabled as boolean | undefined) ?? true}
+            state={isPluginEnabled(plugin)}
             onChange={async (value) => {
               if (plugin.pluginId === "assessments-average" && value === true) {
                 showDisclaimer(
@@ -126,7 +134,7 @@
       </div>
     {/if}
 
-    {#if !perfPaused && (!plugin.disableToggle || ((pluginSettingsStore.values[plugin.pluginId]?.enabled as boolean | undefined) ?? true))}
+    {#if !perfPaused && (!plugin.disableToggle || (isPluginEnabled(plugin)))}
       {#each Object.entries(plugin.settings) as [key, setting] (key)}
         {#if key !== "enabled" && !(key === "useCloudPfp" && !cloudState.isLoggedIn)}
           <div class="flex justify-between items-center px-4 py-3">
