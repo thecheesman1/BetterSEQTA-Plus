@@ -3,6 +3,7 @@ import type { SettingsState } from "@/types/storage";
 import { getDefaultSettingsState } from "@/seqta/utils/defaultSettings";
 import { ensureSyncableStorageDefaults } from "@/seqta/utils/ensureSyncableStorageDefaults";
 import { fetchNews } from "./background/news";
+import { handleAskSeqta, type AskSeqtaRequest } from "./background/askSeqta";
 import {
   initCloudSettingsAutoSync,
   performCloudSettingsDownloadWithRetry,
@@ -552,6 +553,14 @@ const MESSAGE_HANDLERS: Record<string, MessageHandler> = {
     }
     const source = typeof req.source === "string" ? req.source : undefined;
     void fetchNews(source).then((news) => sendResponse({ news }));
+    return true;
+  },
+  askSeqta: (req, sendResponse, sender) => {
+    if (!isTrustedSender(sender)) {
+      sendResponse({ error: "Unauthorized sender" });
+      return false;
+    }
+    void handleAskSeqta(req as AskSeqtaRequest).then(sendResponse);
     return true;
   },
   fetchThemes: handleFetchThemes,

@@ -1,0 +1,17 @@
+{
+  "name": "ask-seqta-bridge",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Answers BetterSEQTA+ 'Ask SEQTA' questions with Claude",
+  "type": "module",
+  "main": "server.mjs",
+  "scripts": {
+    "start": "node --env-file-if-exists=.env server.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.4.0"
+  }
+}
