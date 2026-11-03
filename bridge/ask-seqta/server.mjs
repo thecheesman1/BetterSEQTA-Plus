@@ -6,10 +6,15 @@
  *   GET  /health  ->  { ok, backend, model, ready }
  *
  * Backends (BACKEND env):
+ *   cli  (default) Your own Claude subscription via `claude -p`. Everyone runs
+ *        their own copy on their own computer: it only listens on localhost
+ *        and refuses OPEN=1. No npm install needed: `node server.mjs`.
  *   api  Anthropic API key (ANTHROPIC_API_KEY). The only backend that may be
- *        opened to other people (OPEN=1). Billed per request.
- *   cli  Your own Claude subscription via `claude -p`. Personal use only:
- *        refuses to start with OPEN=1, and should only hold your own keys.
+ *        opened to other people (OPEN=1). Billed per request. Needs `npm ci`.
+ *
+ * Local mode (no keys.json, loopback host): requests must carry the
+ * X-Ask-Seqta header and come from an extension (or no Origin), so a web page
+ * open in your browser can't make your bridge spend your subscription.
  *
  * The model never gets tools (API: none declared; CLI: --tools ""), so text in
  * the context (teacher messages etc.) can at worst skew an answer, never act.
@@ -20,12 +25,11 @@ import { spawn } from "node:child_process";
 import { readFileSync, mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import Anthropic from "@anthropic-ai/sdk";
 
 const env = process.env;
 const PORT = Number(env.PORT ?? 8737);
 const HOST = env.HOST ?? "127.0.0.1"; // cloudflared connects locally
-const BACKEND = env.BACKEND ?? "api";
+const BACKEND = env.BACKEND ?? "cli";
 const MODEL = env.MODEL ?? "claude-haiku-5-5";
 const EFFORT = env.EFFORT ?? "low";
 const OPEN = env.OPEN === "1"; // allow requests without an access key
@@ -40,6 +44,14 @@ const TIMEOUT_MS = 90_000;
 
 if (BACKEND !== "api" && BACKEND !== "cli") {
   console.error(`BACKEND must be "api" or "cli", got ${BACKEND}`);
+  process.exit(1);
+}
+const LOOPBACK = new Set(["127.0.0.1", "::1", "localhost"]);
+if (BACKEND === "cli" && !LOOPBACK.has(HOST)) {
+  console.error(
+    `Refusing to start: BACKEND=cli uses your personal Claude subscription, so it only ` +
+      `listens on this computer (HOST=127.0.0.1), not ${HOST}.`,
+  );
   process.exit(1);
 }
 if (BACKEND === "cli" && OPEN) {
@@ -60,7 +72,14 @@ function loadKeys() {
   }
 }
 const keys = loadKeys();
-if (!keys.size && !OPEN) console.warn("No keys.json entries and OPEN!=1: every /ask will be 401.");
+/** No keys and loopback-only: trust local callers that pass the CSRF checks. */
+const LOCAL_MODE = !keys.size && !OPEN && LOOPBACK.has(HOST);
+if (!keys.size && !OPEN && !LOCAL_MODE) console.warn("No keys.json entries and OPEN!=1: every /ask will be 401.");
+
+/** Origins allowed in local mode: browser extensions, or none (curl, tools). */
+function isExtensionOrNoOrigin(origin) {
+  return !origin || /^(chrome|moz|safari-web)-extension:\/\//.test(origin);
+}
 
 const SYSTEM = `You are "Ask SEQTA", a helpful assistant inside a school's SEQTA Learn portal. You answer one student's questions about their own school data: timetable, assessments, marks, and messages from teachers.
 
@@ -100,9 +119,12 @@ function buildUserText({ question, context }) {
   return `<seqta_data>\n${context}\n</seqta_data>\n\nQuestion: ${question}`;
 }
 
-const anthropic = BACKEND === "api" && env.ANTHROPIC_API_KEY ? new Anthropic() : null;
+// Loaded lazily so the cli backend runs with no npm install at all.
+const sdk = BACKEND === "api" ? (await import("@anthropic-ai/sdk")).default : null;
+const anthropic = sdk && env.ANTHROPIC_API_KEY ? new sdk() : null;
 
 async function askApi(payload) {
+  const Anthropic = sdk;
   if (!anthropic) throw Object.assign(new Error("Server has no API key configured"), { status: 503 });
   const history = (payload.history ?? []).slice(-6).map((m) => ({
     role: m.role === "assistant" ? "assistant" : "user",
@@ -224,6 +246,7 @@ const server = createServer(async (req, res) => {
         backend: BACKEND,
         model: MODEL,
         open: OPEN,
+        local: LOCAL_MODE,
         ready: BACKEND === "cli" || Boolean(anthropic),
       });
     }
@@ -235,7 +258,15 @@ const server = createServer(async (req, res) => {
     // Behind Cloudflare the real client IP is in cf-connecting-ip.
     const ip = String(req.headers["cf-connecting-ip"] ?? req.socket.remoteAddress ?? "?");
 
-    if (keyId) {
+    if (LOCAL_MODE && !keyId) {
+      who = "local";
+      const remote = String(req.socket.remoteAddress ?? "");
+      const fromLoopback = remote === "127.0.0.1" || remote === "::1" || remote === "::ffff:127.0.0.1";
+      if (!fromLoopback || req.headers["x-ask-seqta"] !== "1" || !isExtensionOrNoOrigin(req.headers.origin)) {
+        return finish(403, { error: "Only the BetterSEQTA+ extension on this computer can use this bridge" });
+      }
+      if (!allow("local", PER_KEY_PER_HOUR)) return finish(429, { error: "Slow down: hourly limit reached" });
+    } else if (keyId) {
       who = `key:${keyId}`;
       if (!allow(`key:${keyId}`, PER_KEY_PER_HOUR)) return finish(429, { error: "Slow down: hourly limit reached" });
     } else if (OPEN && !token) {
@@ -272,6 +303,7 @@ const server = createServer(async (req, res) => {
 
 server.listen(PORT, HOST, () => {
   console.log(
-    `Ask SEQTA bridge on http://${HOST}:${PORT} · backend=${BACKEND} model=${MODEL} effort=${EFFORT} open=${OPEN} keys=${keys.size}`,
+    `Ask SEQTA bridge on http://${HOST}:${PORT} · backend=${BACKEND} model=${MODEL} effort=${EFFORT} ` +
+      (LOCAL_MODE ? "mode=local (this computer only)" : `open=${OPEN} keys=${keys.size}`),
   );
 });

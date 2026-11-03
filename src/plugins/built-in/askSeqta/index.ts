@@ -9,14 +9,15 @@ import styles from "./styles.css?inline";
 
 const settings = defineSettings({
   serverUrl: stringSetting({
-    default: "https://ask-api.bin-chicken.org",
-    title: "Server URL",
-    description: "The Ask SEQTA bridge to send questions to",
+    default: "http://localhost:8737",
+    title: "Bridge URL",
+    description:
+      "Your Ask SEQTA bridge. Run bridge/ask-seqta on your own computer, signed in to your own Claude account",
   }),
   accessKey: stringSetting({
     default: "",
     title: "Access key",
-    description: "Only needed if the server requires one",
+    description: "Only needed if your bridge uses keys.json",
   }),
 });
 

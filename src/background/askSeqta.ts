@@ -37,6 +37,9 @@ export async function handleAskSeqta(
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        // The bridge's CSRF guard: web pages can't send this without a CORS
+        // preflight, which the bridge never approves.
+        "X-Ask-Seqta": "1",
         ...(key ? { Authorization: `Bearer ${key}` } : {}),
       },
       body: JSON.stringify({
@@ -55,7 +58,9 @@ export async function handleAskSeqta(
       error:
         (e as Error)?.name === "AbortError"
           ? "The server took too long to answer."
-          : "Couldn't reach the Ask SEQTA server.",
+          : LOCAL_HOSTS.has(url.hostname)
+            ? "Couldn't reach your Ask SEQTA bridge. Is it running? In bridge/ask-seqta run: node server.mjs"
+            : "Couldn't reach the Ask SEQTA server.",
     };
   } finally {
     clearTimeout(timer);
