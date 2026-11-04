@@ -94,9 +94,17 @@ async function nextSchoolDay(): Promise<Picked | null> {
 }
 
 const DAY_FMT = new Intl.DateTimeFormat(undefined, { weekday: "long" });
+/** 47 -> "47 min", 514 -> "8h 34m" */
+function duration(minutes: number): string {
+  if (minutes < 60) return `${minutes} min`;
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return m ? `${h}h ${m}m` : `${h}h`;
+}
+
 function whenText({ live, minutes, later, lesson }: Picked): string {
-  if (live) return `${minutes} min left`;
-  if (!later) return `starts in ${minutes} min`;
+  if (live) return `${duration(minutes)} left`;
+  if (!later) return `starts in ${duration(minutes)}`;
   const day =
     lesson.date === addDays(ymd(), 1) ? "Tomorrow" : DAY_FMT.format(parseYmd(lesson.date));
   return `${day} · ${lesson.from}`;

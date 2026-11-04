@@ -20,6 +20,14 @@ const PLUGIN_STORAGE_KEYS = [
   "plugin.timetableEdit.storage.timetableOverridesBySubject",
   "plugin.messageFolders.storage.folders",
   "plugin.messageFolders.storage.messageAssignments",
+  // Plugin storage only loads at boot if it's listed here; unlisted keys are
+  // written to disk but come back empty on every page load.
+  "plugin.level-up.storage.unlocked",
+  "plugin.results-drop.storage.seen",
+  "plugin.results-drop.storage.primed",
+  "plugin.lesson-notes.storage.notes",
+  "plugin.class-mode.storage.collapsed",
+  "plugin.class-mode.storage.autoOpened",
 ] as const;
 
 const SETTINGS_STORAGE_KEYS = [

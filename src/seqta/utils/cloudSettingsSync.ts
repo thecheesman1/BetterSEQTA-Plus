@@ -61,6 +61,8 @@ export const SENSITIVE_DEVICE_STORAGE_KEYS_EXACT = [
 export const SENSITIVE_DEVICE_STORAGE_KEY_PREFIXES = [
   "plugin.global-search.storage.",
   "bsplus.analytics.",
+  // Per-device "already toasted" state: each device does its own quiet first run.
+  "plugin.results-drop.storage.",
 ] as const;
 
 const CLIENT_ONLY_CLOUD_KEYS_EXACT = [
