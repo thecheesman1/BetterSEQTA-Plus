@@ -344,6 +344,9 @@ async function callHomeTimetable(date: string, change?: boolean) {
             }
           }
 
+          // Stable keys for plugins (change alerts, lesson notes) before 12h formatting.
+          lessonArray[i].date = date;
+          lessonArray[i].rawFrom = lessonArray[i].from.substring(0, 5);
           lessonArray[i].from = lessonArray[i].from.substring(0, 5);
           lessonArray[i].until = lessonArray[i].until.substring(0, 5);
 
@@ -461,6 +464,8 @@ function makeLessonDiv(lesson: HomeTimetableLesson, num: number) {
     metaID,
     assessments,
     type,
+    date,
+    rawFrom,
   } = lesson;
 
   const homeClassAttrs =
@@ -469,7 +474,7 @@ function makeLessonDiv(lesson: HomeTimetableLesson, num: number) {
       : "";
 
   let lessonString = `
-      <div class="day" id="${code + num}" style="${colour}"${homeClassAttrs}>
+      <div class="day" id="${code + num}" style="${colour}"${homeClassAttrs} data-bsplus-date="${date ?? ""}" data-bsplus-from="${rawFrom ?? ""}">
         <h2>${type == "class" ? description : type == "tutorial" ? "Tutorial" : "Unknown"}</h2>
         <h3>${staff || "Unknown"}</h3>
         <h3>${room || (type == "tutorial" ? "Unknown" : "N/A")}</h3>

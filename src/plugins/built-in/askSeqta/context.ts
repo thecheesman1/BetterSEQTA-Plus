@@ -172,6 +172,21 @@ async function gradesSection(): Promise<string> {
     .join("\n")}`;
 }
 
+// ---- lesson notes (Lesson Notes plugin) --------------------------------------------
+
+type StoredNote = { subject?: string; date?: string; from?: string; text?: string; done?: boolean };
+
+async function notesSection(): Promise<string> {
+  const got = await browser.storage.local.get("plugin.lesson-notes.storage.notes");
+  const notes = ((got["plugin.lesson-notes.storage.notes"] ?? []) as StoredNote[]).filter(
+    (n) => !n.done && n.text,
+  );
+  if (!notes.length) return "";
+  return `## The student's own lesson notes (open reminders; each shows up at that subject's next lesson)\n${notes
+    .map((n) => `- ${n.subject}, written ${n.date ? dayLabel(n.date) : "?"}: ${n.text}`)
+    .join("\n")}`;
+}
+
 // ---- notices & messages ---------------------------------------------------------
 
 type Notice = { title?: string; contents?: string; staff?: string; label_title?: string };
@@ -257,6 +272,7 @@ export async function buildSeqtaContext(force = false): Promise<string> {
       noticesSection(),
       gradesSection(),
       messagesSection(),
+      notesSection(),
     ].map((p) => p.catch(() => "")),
   );
 

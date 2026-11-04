@@ -1,0 +1,179 @@
+.bsplus-crunch {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0 20px 18px;
+  background: var(--better-main);
+  border-radius: 16px;
+  box-shadow: 0px 5px 16px 6px rgba(0, 0, 0, 0.3);
+  overflow: visible !important;
+  position: relative;
+  z-index: 2;
+}
+.bsplus-crunch-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 16px;
+}
+.bsplus-crunch-head .home-subtitle {
+  margin: 20px 0 12px;
+  font-size: 20px;
+  font-weight: 400;
+}
+.bsplus-crunch-summary {
+  font-size: 13px;
+  opacity: 0.7;
+}
+.bsplus-crunch-summary b {
+  color: #f59e0b;
+  opacity: 1;
+}
+.bsplus-crunch-loading {
+  height: 96px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--text-primary, #fff) 5%, transparent);
+}
+.bsplus-crunch-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px 14px;
+  padding-top: 18px;
+  /* No overflow scrolling: it would clip the hover popovers. Weeks wrap instead. */
+}
+.bsplus-crunch-week {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 6px;
+  border-radius: 14px;
+}
+.bsplus-crunch-week.is-crunch {
+  background: color-mix(in srgb, #f59e0b 12%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #f59e0b 45%, transparent);
+}
+.bsplus-crunch-flag {
+  position: absolute;
+  top: -10px;
+  left: 10px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: #f59e0b;
+  color: #1a1206;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.bsplus-crunch-days {
+  display: flex;
+  gap: 6px;
+}
+.bsplus-crunch-day {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 38px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  outline: none;
+}
+.bsplus-crunch-bars {
+  width: 100%;
+  height: 64px;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 2px;
+  padding: 3px;
+  box-sizing: border-box;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--text-primary, #fff) 6%, transparent);
+}
+.bsplus-crunch-bar {
+  display: block;
+  width: 100%;
+  min-height: 6px;
+  border-radius: 6px;
+  background: var(--c);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--c) 45%, transparent);
+}
+.bsplus-crunch-day.is-today .bsplus-crunch-bars {
+  box-shadow: inset 0 0 0 2px var(--better-pale, #fff);
+}
+.bsplus-crunch-day.has-items {
+  cursor: pointer;
+}
+.bsplus-crunch-day.has-items:hover .bsplus-crunch-bars,
+.bsplus-crunch-day.has-items:focus .bsplus-crunch-bars {
+  background: color-mix(in srgb, var(--text-primary, #fff) 12%, transparent);
+}
+.bsplus-crunch-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.1;
+  font-size: 11px;
+}
+.bsplus-crunch-label span {
+  opacity: 0.6;
+}
+.bsplus-crunch-label b {
+  font-size: 14px;
+}
+.bsplus-crunch-label i {
+  font-style: normal;
+  color: #f59e0b;
+}
+.bsplus-crunch-pop {
+  display: none;
+  position: absolute;
+  z-index: 20;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 240px;
+  padding: 6px;
+  border-radius: 12px;
+  background: var(--background-primary, #1e1e1e);
+  color: var(--text-primary);
+  box-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.6);
+  border: 1px solid color-mix(in srgb, var(--text-primary, #fff) 12%, transparent);
+}
+.bsplus-crunch-day:hover .bsplus-crunch-pop,
+.bsplus-crunch-day:focus-within .bsplus-crunch-pop {
+  display: grid;
+  gap: 2px;
+}
+.bsplus-crunch-item {
+  display: grid;
+  gap: 1px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  border-left: 3px solid var(--c);
+  color: inherit !important;
+  text-decoration: none !important;
+  font-size: 12px;
+}
+.bsplus-crunch-item:hover {
+  background: color-mix(in srgb, var(--text-primary, #fff) 8%, transparent);
+}
+.bsplus-crunch-item b {
+  font-size: 11px;
+  opacity: 0.7;
+}
+.bsplus-crunch-item small {
+  font-size: 10px;
+  opacity: 0.55;
+}
+
+/* Keep edge popovers on screen. */
+.bsplus-crunch-week:first-child .bsplus-crunch-day:first-child .bsplus-crunch-pop {
+  left: 0;
+  transform: none;
+}
+.bsplus-crunch-week:last-child .bsplus-crunch-day:last-child .bsplus-crunch-pop {
+  left: auto;
+  right: 0;
+  transform: none;
+}

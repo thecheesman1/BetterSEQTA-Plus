@@ -6,7 +6,13 @@ import {
   extractLetterGradeStringFromPayload,
   resolveNumericGradeFromAssessmentPayload,
 } from "./letterGradeScale";
-import { loadAnalyticsCache, loadGradeInferenceSettings, saveAnalyticsCache } from "./storage";
+import browser from "@/lib/browser";
+import {
+  analyticsStorageKey,
+  loadAnalyticsCache,
+  loadGradeInferenceSettings,
+  saveAnalyticsCache,
+} from "./storage";
 import type { AnalyticsGradeInferenceSettings } from "./gradeInferenceSettings";
 import type { Assessment, AssessmentStatus, AnalyticsClassOption } from "./types";
 
@@ -310,6 +316,34 @@ function mergeRawAssessments(
   return Array.from(existingMap.values()).sort(
     (a, b) => new Date(b.due).getTime() - new Date(a.due).getTime(),
   );
+}
+
+/**
+ * Refresh one class's past assessments into the Analytics cache, the same way a
+ * full sync would. Used by Results Drop when a mark is released; Level Up
+ * listens for cache writes, so it recomputes XP by itself.
+ * Returns the whole cache before and after the merge.
+ */
+export async function syncSubjectPast(
+  programme: number,
+  metaclass: number,
+): Promise<{ before: Assessment[]; after: Assessment[] }> {
+  if (settingsState.hideSensitiveContent) return { before: [], after: [] };
+  const studentId = await getStudentId();
+  const cached = await loadAnalyticsCache(location.origin, studentId);
+  const before = cached?.assessments ?? [];
+  const inference = await loadGradeInferenceSettings(location.origin, studentId);
+  const raw = await loadPastForSubject(studentId, { code: "", programme, metaclass });
+  const after = mergeRawAssessments(before, raw, inference);
+  // Keep the old updatedAt: one subject doesn't make the whole cache fresh,
+  // so Analytics still does its own full sync on schedule.
+  await browser.storage.local.set({
+    [analyticsStorageKey(location.origin, studentId)]: {
+      updatedAt: cached?.updatedAt ?? 0,
+      assessments: after,
+    },
+  });
+  return { before, after };
 }
 
 export async function getStudentId(): Promise<number> {

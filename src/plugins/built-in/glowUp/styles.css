@@ -430,11 +430,15 @@ html.bsplus-glow #main {
 html.bsplus-glow .home-container {
   display: grid !important;
   grid-template-columns: repeat(12, minmax(0, 1fr));
+  /* classmode/radar rows belong to the Class Mode and Crunch Radar plugins. Rows
+     are spaced by card margins, not row-gap, so an unused row costs 0px. */
   grid-template-areas:
     "hero hero hero hero hero hero hero shortcuts shortcuts shortcuts shortcuts shortcuts"
+    "classmode classmode classmode classmode classmode classmode classmode classmode classmode classmode classmode classmode"
     "lessons lessons lessons lessons lessons lessons lessons lessons lessons lessons lessons lessons"
+    "radar radar radar radar radar radar radar radar radar radar radar radar"
     "upcoming upcoming upcoming upcoming upcoming upcoming upcoming notices notices notices notices notices";
-  gap: 20px;
+  gap: 0 20px;
   max-width: 1440px;
   margin: 0 auto !important;
   padding: 8px 32px 0 !important;
@@ -462,12 +466,21 @@ html.bsplus-glow .home-container > .upcoming-container {
 html.bsplus-glow .home-container > .notices-container {
   grid-area: notices;
 }
+html.bsplus-glow .home-container > .bsplus-classmode {
+  grid-area: classmode;
+}
+html.bsplus-glow .home-container > .bsplus-crunch {
+  grid-area: radar;
+}
+
 @media (max-width: 1000px) {
   html.bsplus-glow .home-container {
     grid-template-areas:
       "hero hero hero hero hero hero hero hero hero hero hero hero"
       "shortcuts shortcuts shortcuts shortcuts shortcuts shortcuts shortcuts shortcuts shortcuts shortcuts shortcuts shortcuts"
+      "classmode classmode classmode classmode classmode classmode classmode classmode classmode classmode classmode classmode"
       "lessons lessons lessons lessons lessons lessons lessons lessons lessons lessons lessons lessons"
+      "radar radar radar radar radar radar radar radar radar radar radar radar"
       "upcoming upcoming upcoming upcoming upcoming upcoming upcoming upcoming upcoming upcoming upcoming upcoming"
       "notices notices notices notices notices notices notices notices notices notices notices notices";
     padding: 8px 16px 0 !important;
@@ -479,7 +492,8 @@ html.bsplus-glow .home-container > .border,
 html.bsplus-glow #bsplus-glow-hero {
   width: auto !important;
   min-width: 0;
-  margin: 0 !important;
+  /* Row spacing (the grid has no row-gap; see .home-container). */
+  margin: 0 0 20px !important;
   border-radius: var(--g-radius) !important;
   background: var(--g-surface) !important;
   border: 1px solid var(--g-border) !important;

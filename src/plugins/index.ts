@@ -14,6 +14,11 @@ import levelUpPlugin from "./built-in/levelUp";
 import askSeqtaPlugin from "./built-in/askSeqta";
 import glowUpPlugin from "./built-in/glowUp";
 import seqtaLocalPlugin from "./built-in/seqtaLocal";
+import changeAlertPlugin from "./built-in/changeAlert";
+import crunchRadarPlugin from "./built-in/crunchRadar";
+import resultsDropPlugin from "./built-in/resultsDrop";
+import lessonNotesPlugin from "./built-in/lessonNotes";
+import classModePlugin from "./built-in/classMode";
 
 import assessmentsAveragePluginLazy from "./built-in/assessmentsAverage/lazy";
 import timetableEditPluginLazy from "./built-in/timetableEdit/lazy";
@@ -39,6 +44,11 @@ pluginManager.registerPlugin(levelUpPlugin);
 pluginManager.registerPlugin(askSeqtaPlugin);
 pluginManager.registerPlugin(glowUpPlugin);
 pluginManager.registerPlugin(seqtaLocalPlugin);
+pluginManager.registerPlugin(changeAlertPlugin);
+pluginManager.registerPlugin(crunchRadarPlugin);
+pluginManager.registerPlugin(resultsDropPlugin);
+pluginManager.registerPlugin(lessonNotesPlugin);
+pluginManager.registerPlugin(classModePlugin);
 
 pluginManager.registerPlugin(assessmentsAveragePluginLazy);
 pluginManager.registerPlugin(timetableEditPluginLazy);

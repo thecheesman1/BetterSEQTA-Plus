@@ -27,6 +27,10 @@ export type HomeTimetableLesson = {
   colour?: string;
   invert?: boolean;
   attendanceTitle?: string;
+  /** YYYY-MM-DD of the day shown (set on home render, for plugins). */
+  date?: string;
+  /** 24h HH:MM start, before any 12h formatting. */
+  rawFrom?: string;
 };
 
 export type HomeUpcomingAssessment = {

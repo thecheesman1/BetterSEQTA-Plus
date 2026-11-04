@@ -11,9 +11,11 @@
 
   interface Props {
     data: Assessment[];
+    /** Preselect a subject (Results Drop / assessment pages); wins over saved prefs. */
+    initialSubject?: string;
   }
 
-  let { data }: Props = $props();
+  let { data, initialSubject }: Props = $props();
 
   const WEIGHTINGS_KEY = "plugin.assessments-average.storage.weightings";
   const OVERRIDES_KEY = "plugin.assessments-average.storage.weightingOverrides";
@@ -22,7 +24,8 @@
   const year = new Date().getFullYear();
 
   let weightOf: WeightLookup = $state(() => null);
-  let subject = $state("");
+  // svelte-ignore state_referenced_locally
+  let subject = $state(initialSubject ?? "");
   let target = $state(75);
 
   /** Subjects with any assessment this year, most recently active first. */
@@ -65,7 +68,7 @@
       );
       const prefs = got[PREFS_KEY] as { subject?: string; target?: number } | undefined;
       if (prefs?.target != null) target = prefs.target;
-      if (prefs?.subject) subject = prefs.subject;
+      if (prefs?.subject && !initialSubject) subject = prefs.subject;
     } catch {
       /* fall back to equal weights */
     }

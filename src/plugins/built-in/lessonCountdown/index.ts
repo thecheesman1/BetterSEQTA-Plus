@@ -6,6 +6,8 @@ import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
 import { solidPageAccent } from "@/seqta/ui/colors/pageAccent";
 import { formatDuration, getLessonStatus, type CountdownLesson } from "./status";
 import styles from "./styles.css?inline";
+import { getAnnotations, onAnnotationsChange } from "@/plugins/shared/lessonAnnotations";
+import { lessonKey } from "@/plugins/shared/dates";
 
 const settings = defineSettings({
   showRoom: booleanSetting({
@@ -162,8 +164,19 @@ const lessonCountdownPlugin: Plugin<typeof settings> = {
       userInfo.insertBefore(chip, userInfo.firstChild);
     };
 
+    /** Change alerts / lesson notes other plugins attached to this lesson. */
+    const annotate = (lesson: CountdownLesson) => {
+      const notes = getAnnotations(lessonKey(todayKey(), lesson.from));
+      chip.classList.toggle("has-annotation", notes.length > 0);
+      if (!notes.length) return;
+      const text = notes.map((n) => `${n.icon} ${n.text}`);
+      label.textContent += ` · ${text.join(" · ")}`;
+      chip.title += `\n${text.join("\n")}`;
+    };
+
     const render = () => {
       const status = getLessonStatus(lessons, now());
+      chip.classList.remove("has-annotation");
 
       if (status.kind === "in-lesson") {
         const { lesson, endsInMs, progress } = status;
@@ -175,6 +188,7 @@ const lessonCountdownPlugin: Plugin<typeof settings> = {
         fill.style.width = `${Math.min(100, progress * 100).toFixed(1)}%`;
         chip.style.setProperty("--cd-colour", lesson.colour ?? solidPageAccent());
         chip.title = `${lesson.description}${lesson.staff ? ` with ${lesson.staff}` : ""}${lesson.room ? ` in ${lesson.room}` : ""}\n${lesson.from.slice(0, 5)}–${lesson.until.slice(0, 5)}${status.next ? `\nNext: ${lessonLabel(status.next, true)}` : ""}`;
+        annotate(lesson);
         return;
       }
 
@@ -188,6 +202,7 @@ const lessonCountdownPlugin: Plugin<typeof settings> = {
         fill.style.width = "0%";
         chip.style.setProperty("--cd-colour", next.colour ?? solidPageAccent());
         chip.title = `${next.description}${next.staff ? ` with ${next.staff}` : ""} at ${next.from.slice(0, 5)}`;
+        annotate(next);
         return;
       }
 
@@ -206,11 +221,13 @@ const lessonCountdownPlugin: Plugin<typeof settings> = {
     const interval = window.setInterval(tick, 1000);
     const unsubRoom = api.settings.onChange("showRoom", render);
     const unsubBreaks = api.settings.onChange("showNextInBreaks", render);
+    const unsubAnnotations = onAnnotationsChange(render);
 
     return () => {
       window.clearInterval(interval);
       unsubRoom.unregister();
       unsubBreaks.unregister();
+      unsubAnnotations();
       chip.remove();
     };
   },
