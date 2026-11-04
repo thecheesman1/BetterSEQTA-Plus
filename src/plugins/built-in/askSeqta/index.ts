@@ -18,7 +18,7 @@ const settings = defineSettings({
     default: "",
     title: "Personality",
     description:
-      "How Ask SEQTA talks (your own system prompt for its voice). Leave empty for the default chill, slightly roast-y co-pilot. It always sticks to your real SEQTA data either way",
+      "How Ask SEQTA talks (your own system prompt for its voice). Leave empty for the default: your Discord bot's personality, typing like it's in a Discord channel. It always sticks to your real SEQTA data either way",
     maxLength: 2000,
   }),
   accessKey: stringSetting({
