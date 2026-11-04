@@ -18,7 +18,7 @@
       "128": "resources/icons/icon-128.png"
     }
   },
-  "permissions": ["tabs", "notifications", "storage", "alarms"],
+  "permissions": ["tabs", "notifications", "storage", "alarms", "cookies"],
   "host_permissions": [
     "https://newsapi.org/",
     "https://betterseqta.org/",

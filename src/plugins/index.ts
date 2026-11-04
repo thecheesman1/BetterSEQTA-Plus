@@ -13,6 +13,7 @@ import lessonCountdownPlugin from "./built-in/lessonCountdown";
 import levelUpPlugin from "./built-in/levelUp";
 import askSeqtaPlugin from "./built-in/askSeqta";
 import glowUpPlugin from "./built-in/glowUp";
+import seqtaLocalPlugin from "./built-in/seqtaLocal";
 
 import assessmentsAveragePluginLazy from "./built-in/assessmentsAverage/lazy";
 import timetableEditPluginLazy from "./built-in/timetableEdit/lazy";
@@ -37,6 +38,7 @@ pluginManager.registerPlugin(lessonCountdownPlugin);
 pluginManager.registerPlugin(levelUpPlugin);
 pluginManager.registerPlugin(askSeqtaPlugin);
 pluginManager.registerPlugin(glowUpPlugin);
+pluginManager.registerPlugin(seqtaLocalPlugin);
 
 pluginManager.registerPlugin(assessmentsAveragePluginLazy);
 pluginManager.registerPlugin(timetableEditPluginLazy);

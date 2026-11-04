@@ -4,6 +4,7 @@ import { getDefaultSettingsState } from "@/seqta/utils/defaultSettings";
 import { ensureSyncableStorageDefaults } from "@/seqta/utils/ensureSyncableStorageDefaults";
 import { fetchNews } from "./background/news";
 import { handleAskSeqta, type AskSeqtaRequest } from "./background/askSeqta";
+import { pushSeqtaSession } from "./background/seqtaLocal";
 import {
   initCloudSettingsAutoSync,
   performCloudSettingsDownloadWithRetry,
@@ -561,6 +562,19 @@ const MESSAGE_HANDLERS: Record<string, MessageHandler> = {
       return false;
     }
     void handleAskSeqta(req as AskSeqtaRequest).then(sendResponse);
+    return true;
+  },
+  seqtaLocalPush: (_req, sendResponse, sender) => {
+    // Only a SEQTA tab's own content script, and only for that tab's origin.
+    let origin = "";
+    try {
+      origin = new URL(sender?.tab?.url ?? "").origin;
+    } catch {}
+    if (!isTrustedSender(sender) || !origin || !isSeqtaOrigin(origin)) {
+      sendResponse({ error: "Unauthorized sender" });
+      return false;
+    }
+    void pushSeqtaSession(origin).then(sendResponse);
     return true;
   },
   fetchThemes: handleFetchThemes,
