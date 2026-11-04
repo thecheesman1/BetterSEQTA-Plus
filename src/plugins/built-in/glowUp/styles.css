@@ -224,6 +224,25 @@ html.bsplus-glow #menu#menu > ul > li {
   transform: none !important;
   transition: background 0.2s ease !important;
 }
+/* On a folder's own page (Assessments, Courses) SEQTA marks the folder active
+   natively, and the sidebar's drill animation then shoves every row -320px with
+   a (2,3,2) !important rule. That collapsed the dock to 0px and sprayed the icons
+   offscreen. Three ids outrank it without touching the other row rules. */
+html.bsplus-glow #menu#menu#menu > ul > :is(li, section) {
+  margin: 0 !important;
+  --bsplus-row-margin-left: 0px !important;
+  --bsplus-slide-off: 0px !important;
+}
+/* Same drill state also kills pointer events on every row except the active
+   folder (and on .bsplus-sidebar-offscreen rows), freezing the whole dock. */
+html.bsplus-glow #menu#menu#menu > ul > :is(li, section),
+html.bsplus-glow #menu#menu#menu > ul > :is(li, section) > label,
+html.bsplus-glow #menu#menu#menu > ul > :is(li, section) > label *,
+html.bsplus-glow #menu#menu#menu > ul > li.hasChildren > .sub,
+html.bsplus-glow #menu#menu#menu > ul > li.hasChildren > .sub * {
+  pointer-events: auto !important;
+  user-select: auto !important;
+}
 html.bsplus-glow #menu#menu > ul > li > label {
   display: flex !important;
   flex-direction: column !important;
@@ -372,6 +391,14 @@ html.bsplus-glow #menu#menu .sub .item {
   border-radius: 11px !important;
   transform: none !important;
   background: transparent !important;
+}
+/* SEQTA pads the rows and the drill animation staggers their margins; the label
+   carries the padding here. */
+html.bsplus-glow #menu#menu#menu .sub > ul > :is(li, section) {
+  margin: 0 !important;
+  padding: 0 !important;
+  --bsplus-row-margin-left: 0px !important;
+  --bsplus-slide-off: 0px !important;
 }
 html.bsplus-glow #menu#menu .sub .item > label {
   display: flex !important;
