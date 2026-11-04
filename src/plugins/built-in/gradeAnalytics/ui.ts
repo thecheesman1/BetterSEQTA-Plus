@@ -87,7 +87,7 @@ function resolvePageAccentColor(): string {
   return "#007bff";
 }
 
-function syncThemeFromPage(target: HTMLElement) {
+export function syncThemeFromPage(target: HTMLElement) {
   const computed = getComputedStyle(document.documentElement);
 
   for (const name of THEME_CSS_VARS) {

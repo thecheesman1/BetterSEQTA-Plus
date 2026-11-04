@@ -1,6 +1,7 @@
 import { mount, unmount } from "svelte";
 import TargetGradeCalculator from "@/plugins/built-in/gradeAnalytics/TargetGradeCalculator.svelte";
 import { loadGradeAnalytics } from "@/plugins/built-in/gradeAnalytics/api";
+import { syncThemeFromPage } from "@/plugins/built-in/gradeAnalytics/ui";
 import { solidPageAccent } from "@/seqta/ui/colors/pageAccent";
 import { escapeHtml } from "@/plugins/shared/homeLessons";
 import type { ResultSummary } from "./summary";
@@ -152,8 +153,10 @@ export async function openCalculator(subject?: string) {
 
   const overlay = document.createElement("div");
   overlay.id = "bsplus-rd-modal";
-  overlay.innerHTML = `<div class="bsplus-rd-modal-box bsplus-analytics-mount"><button class="bsplus-rd-modal-close" aria-label="Close">×</button><div class="bsplus-rd-modal-body"></div></div>`;
+  overlay.innerHTML = `<div class="bsplus-rd-modal-box bsplus-analytics-mount bsplus-analytics-root"><button class="bsplus-rd-modal-close" aria-label="Close">×</button><div class="bsplus-rd-modal-body"></div></div>`;
   document.body.appendChild(overlay);
+  // Same theme tokens + dark class the Analytics page applies to its mount.
+  syncThemeFromPage(overlay.querySelector<HTMLElement>(".bsplus-rd-modal-box")!);
   const body = overlay.querySelector<HTMLElement>(".bsplus-rd-modal-body")!;
 
   if (!assessments.length) {
