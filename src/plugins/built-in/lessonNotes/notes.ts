@@ -37,6 +37,24 @@ export function notesForLesson(
   };
 }
 
+/**
+ * Start time of the block a lesson belongs to: back-to-back periods of the same
+ * subject (doubles, even across recess) count as ONE lesson. Notes are keyed by
+ * block, so a note written in period 1 of a double isn't "last time" in period 2.
+ * `day` = that date's lessons, any order.
+ */
+export function blockStart(
+  day: { code: string; from: string }[],
+  code: string,
+  from: string,
+): string {
+  const sorted = [...day].sort((a, b) => a.from.localeCompare(b.from));
+  let i = sorted.findIndex((l) => l.code === code && l.from.slice(0, 5) === from.slice(0, 5));
+  if (i < 0) return from.slice(0, 5);
+  while (i > 0 && sorted[i - 1].code === code) i--;
+  return sorted[i].from.slice(0, 5);
+}
+
 export function pruneNotes(notes: LessonNote[], now = Date.now()): LessonNote[] {
   return notes.filter((n) => !n.done || now - (n.doneAt ?? n.createdAt) < PRUNE_DONE_MS);
 }

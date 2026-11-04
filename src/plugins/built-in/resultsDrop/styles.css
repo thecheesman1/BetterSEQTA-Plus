@@ -118,7 +118,8 @@
 /* "What do I need?" pill on assessment pages */
 #bsplus-rd-pill {
   position: fixed;
-  left: 20px;
+  /* Beside the Ask SEQTA button, clear of the sidebar menu. */
+  right: 110px;
   bottom: 20px;
   z-index: 1001;
   padding: 10px 16px;
@@ -134,9 +135,10 @@
 #bsplus-rd-pill:hover {
   transform: translateY(-2px);
 }
-/* Glow Up's dock sits along the bottom; float above it. */
+/* Glow Up's dock sits along the bottom; float above Ask instead. */
 html.bsplus-glow #bsplus-rd-pill {
-  bottom: 100px;
+  right: 20px;
+  bottom: 76px;
 }
 
 #bsplus-rd-modal {

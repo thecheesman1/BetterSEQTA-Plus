@@ -3,7 +3,15 @@ import { type Plugin } from "@/plugins/core/types";
 import { booleanSetting, defineSettings, Setting } from "@/plugins/core/settingsHelpers";
 import DOMPurify from "dompurify";
 import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
-import { lessonKey, nowMinutes, toMinutes, ymd } from "@/plugins/shared/dates";
+import {
+  addDays,
+  isWeekend,
+  lessonKey,
+  nowMinutes,
+  parseYmd,
+  toMinutes,
+  ymd,
+} from "@/plugins/shared/dates";
 import {
   getDay,
   getSubjectColours,
@@ -18,7 +26,7 @@ const settings = defineSettings({
   showNext: booleanSetting({
     default: true,
     title: "Show the next lesson between classes",
-    description: "Between lessons, show what's coming up instead of hiding",
+    description: "Between lessons (and after school), show what's coming up instead of hiding",
   }),
   autoOpen: booleanSetting({
     default: false,
@@ -59,13 +67,39 @@ function loadCourse(programme: number, metaclass: number): Promise<CoursePayload
   return p;
 }
 
+type Picked = { lesson: TimetableLesson; live: boolean; minutes: number; later: boolean };
+
 /** The lesson on now, else (optionally) the next one today. */
-function pick(lessons: TimetableLesson[], showNext: boolean) {
+function pick(lessons: TimetableLesson[], showNext: boolean): Picked | null {
   const t = nowMinutes();
   const now = lessons.find((l) => toMinutes(l.from) <= t && t < toMinutes(l.until));
-  if (now) return { lesson: now, live: true, minutes: Math.ceil(toMinutes(now.until) - t) };
+  if (now) {
+    return { lesson: now, live: true, minutes: Math.ceil(toMinutes(now.until) - t), later: false };
+  }
   const next = showNext ? lessons.find((l) => toMinutes(l.from) > t) : undefined;
-  return next ? { lesson: next, live: false, minutes: Math.ceil(toMinutes(next.from) - t) } : null;
+  return next
+    ? { lesson: next, live: false, minutes: Math.ceil(toMinutes(next.from) - t), later: false }
+    : null;
+}
+
+/** After school: the first class of the next school day (within a week). */
+async function nextSchoolDay(): Promise<Picked | null> {
+  for (let i = 1; i <= 7; i++) {
+    const date = addDays(ymd(), i);
+    if (isWeekend(date)) continue;
+    const first = (await getDay(date)).filter(isRealClass)[0];
+    if (first) return { lesson: first, live: false, minutes: 0, later: true };
+  }
+  return null;
+}
+
+const DAY_FMT = new Intl.DateTimeFormat(undefined, { weekday: "long" });
+function whenText({ live, minutes, later, lesson }: Picked): string {
+  if (live) return `${minutes} min left`;
+  if (!later) return `starts in ${minutes} min`;
+  const day =
+    lesson.date === addDays(ymd(), 1) ? "Tomorrow" : DAY_FMT.format(parseYmd(lesson.date));
+  return `${day} · ${lesson.from}`;
 }
 
 function sanitize(html: string): string {
@@ -107,16 +141,18 @@ const classModePlugin: Plugin<typeof settings, Storage> = {
       } catch {
         return;
       }
-      const picked = pick(lessons, api.settings.showNext);
+      const picked =
+        pick(lessons, api.settings.showNext) ??
+        (api.settings.showNext ? await nextSchoolDay().catch(() => null) : null);
       if (!picked) return removeCard();
 
-      const { lesson, live, minutes } = picked;
+      const { lesson, live } = picked;
       const key = `${lessonKey(lesson.date, lesson.from)}|${live}`;
       let root = home.querySelector<HTMLElement>(`:scope > .${ROOT_CLASS}`);
       // Same lesson already rendered: just refresh the countdown text.
       if (root && key === shownKey && !force) {
         const when = root.querySelector(".bsplus-cm-when");
-        if (when) when.textContent = live ? `${minutes} min left` : `starts in ${minutes} min`;
+        if (when) when.textContent = whenText(picked);
         return;
       }
       shownKey = key;
@@ -152,14 +188,14 @@ const classModePlugin: Plugin<typeof settings, Storage> = {
 
       root.innerHTML = `
         <div class="bsplus-cm-head">
-          <span class="bsplus-cm-badge${live ? " is-live" : ""}">${live ? "Now" : "Up next"}</span>
+          <span class="bsplus-cm-badge${live ? " is-live" : ""}">${live ? "Now" : picked.later ? "Next lesson" : "Up next"}</span>
           <div class="bsplus-cm-titles">
             <div class="bsplus-cm-subject">${escapeHtml(lesson.description)} · ${escapeHtml(lesson.from)}–${escapeHtml(lesson.until)}${lesson.room ? ` · ${escapeHtml(lesson.room)}` : ""}</div>
             <div class="bsplus-cm-title">${escapeHtml(title || "Lesson")}${match?.continued ? " <small>(continued)</small>" : ""}${
               match?.term ? ` <small>T${match.term} W${match.week}</small>` : ""
             }</div>
           </div>
-          <span class="bsplus-cm-when">${live ? `${minutes} min left` : `starts in ${minutes} min`}</span>
+          <span class="bsplus-cm-when">${escapeHtml(whenText(picked))}</span>
           <a class="bsplus-cm-open" href="${courseHref}">Course →</a>
           <button class="bsplus-cm-toggle" title="Collapse">${api.storage.collapsed ? "▾" : "▴"}</button>
         </div>

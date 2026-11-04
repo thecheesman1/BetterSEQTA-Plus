@@ -11,7 +11,7 @@ import {
   watchHomeLessons,
   type HomeLessonCard,
 } from "@/plugins/shared/homeLessons";
-import { newNoteId, notesForLesson, pruneNotes, type LessonNote } from "./notes";
+import { blockStart, newNoteId, notesForLesson, pruneNotes, type LessonNote } from "./notes";
 import styles from "./styles.css?inline";
 
 const settings = defineSettings({
@@ -135,7 +135,13 @@ const lessonNotesPlugin: Plugin<typeof settings, Storage> = {
       for (const card of cards) {
         if (!card.programmeID || !card.el.isConnected) continue;
         const subject = card.el.querySelector("h2")?.textContent?.trim() || card.code;
-        const target: Target = { code: card.code, subject, date: card.date, from: card.from };
+        // Doubles share one note: key by the block's first period.
+        const from = blockStart(
+          cards.filter((c) => c.date === card.date),
+          card.code,
+          card.from,
+        );
+        const target: Target = { code: card.code, subject, date: card.date, from };
 
         let btn = card.el.querySelector<HTMLElement>(":scope > .bsplus-note-btn");
         if (!btn) {
@@ -151,7 +157,7 @@ const lessonNotesPlugin: Plugin<typeof settings, Storage> = {
         };
 
         card.el.querySelector(":scope > .bsplus-note-line")?.remove();
-        const { carried, own } = notesForLesson(notes(), card.code, card.date, card.from);
+        const { carried, own } = notesForLesson(notes(), card.code, card.date, from);
         const show = carried[0] ?? own.find((n) => !n.done);
         if (!show) continue;
         const line = document.createElement("div");
@@ -177,15 +183,18 @@ const lessonNotesPlugin: Plugin<typeof settings, Storage> = {
 
     // ---- Lesson Countdown annotations (today) ---------------------------------
     let today: TimetableLesson[] = [];
+    let todayAll: TimetableLesson[] = []; // incl. home group: it breaks up doubles
     async function publishAnnotations() {
       clearAnnotations(SOURCE);
       try {
-        today = (await getDay(ymd())).filter(isRealClass);
+        todayAll = await getDay(ymd());
+        today = todayAll.filter(isRealClass);
       } catch {
         return;
       }
       for (const l of today) {
-        const { carried } = notesForLesson(notes(), l.code, l.date, l.from);
+        const block = blockStart(todayAll, l.code, l.from);
+        const { carried } = notesForLesson(notes(), l.code, l.date, block);
         if (!carried.length) continue;
         setAnnotation(lessonKey(l.date, l.from), {
           source: SOURCE,
@@ -209,7 +218,7 @@ const lessonNotesPlugin: Plugin<typeof settings, Storage> = {
         code: lesson.code,
         subject: lesson.description || lesson.code,
         date: lesson.date,
-        from: lesson.from,
+        from: blockStart(todayAll, lesson.code, lesson.from),
       });
     };
     document.addEventListener("keydown", onKey);
