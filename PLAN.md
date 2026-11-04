@@ -7,6 +7,28 @@ find it, you'll forget it exists. (RIP the target grade calculator, alive but bu
 Already shipped: Lesson Countdown · Level Up · Ask SEQTA · Glow Up · target grade calculator
 (Analytics) · SEQTA Local.
 
+## Status (2026-11-05)
+
+Features 1–5 below are **shipped** (beta, on by default) and clicked through in the browser,
+with Glow Up both on and off. How the build differs from the plan:
+
+- **Results Drop** polls `heartbeat` itself (shared `assessmentEvents`), because Notification
+  Collector's archive only exists while "save locally" is on. The calculator opens in a modal
+  from the toast, and from a 🎯 button on Assessments pages.
+- **Class Mode** pairs lesson n with slot n, like SEQTA's own course page (counts often don't
+  match). It follows "See Previous Lesson" back for doubles, and after school it previews the
+  next school day's first lesson.
+- **Lesson Notes** key by double-period block: a note from period 1 isn't "last time" in
+  period 2. Notes cloud-sync with BetterSEQTA settings, so they follow you across devices.
+- **Change Alert** shows on home and in Lesson Countdown. Still TODO: the Timetable page.
+- **Not done yet:** Results Drop phase 2 (OS notifications) and the confetti for a real
+  released mark, which can only be seen live when a mark drops.
+
+Found while testing: plugin settings and storage only load at boot if they're listed in
+`syncablePluginDefaults.ts` / `PLUGIN_STORAGE_KEYS`. Every fork plugin was missing, so they
+reset on every page load. Fixed, and `src/plugins/bootLoading.test.ts` now fails if any
+plugin isn't listed. **New plugins: add yourself to both lists.**
+
 ---
 
 ## 1. Results Drop 🎯 (next up)
